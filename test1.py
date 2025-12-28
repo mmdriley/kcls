@@ -1,3 +1,4 @@
+from datetime import datetime
 import os
 
 from selenium import webdriver
@@ -13,6 +14,9 @@ UN = os.environ['KCLS_USERNAME']
 PW = os.environ['KCLS_PASSWORD']
 
 with webdriver.Chrome(options) as driver:
+  # TODO: "sort by due date ascending" is the default for the checked-out view,
+  # but if we wanted to be especially careful we could include the URL parameter
+  # for it. Would definitely require more careful URL encoding.
   driver.get('https://kcls.bibliocommons.com/user/login?destination=https://kcls.bibliocommons.com/v2/checkedout')
 
   username_el = driver.find_element(By.CSS_SELECTOR, 'input[type=text][data-js=username_login]')
@@ -38,7 +42,14 @@ with webdriver.Chrome(options) as driver:
       except NoSuchElementException:
         return ''
   
-    print('Title:', t('a[data-key=bib-title] span.title-content'))
-    print('Author:', t('a[data-key=author-link]'))
-    print('Due:', t('div.cp-checked-out-due-on').removeprefix('Due by '))
-    print()
+    title = t('a[data-key=bib-title] span.title-content')
+    author = t('a[data-key=author-link]')  # sometimes missing
+
+    due_date_str = t('div.cp-checked-out-due-on').removeprefix('Due by ')
+    due_date = datetime.strptime(due_date_str, '%b %d, %Y')
+
+    barcode = t('div.cp-barcode-field span.field-value')
+
+    print(f'{due_date:%Y-%m-%d}    '
+          f'{title:>40}'
+          f'{author:>20}')
