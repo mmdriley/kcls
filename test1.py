@@ -1,37 +1,51 @@
+from collections.abc import Iterable
+import dataclasses
 from datetime import datetime
 import os
 
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.webdriver import WebDriver as RemoteWebDriver
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 
 options = webdriver.ChromeOptions()
 options.add_argument('--headless=new')
 
-UN = os.environ['KCLS_USERNAME']
-PW = os.environ['KCLS_PASSWORD']
 
-with webdriver.Chrome(options) as driver:
-  # TODO: "sort by due date ascending" is the default for the checked-out view,
-  # but if we wanted to be especially careful we could include the URL parameter
-  # for it. Would definitely require more careful URL encoding.
-  driver.get('https://kcls.bibliocommons.com/user/login?destination=https://kcls.bibliocommons.com/v2/checkedout')
+def login_as(driver: RemoteWebDriver, username: str, password: str):
+  driver.get('https://kcls.bibliocommons.com/user/login')
 
   username_el = driver.find_element(By.CSS_SELECTOR, 'input[type=text][data-js=username_login]')
-  username_el.send_keys(UN)
+  username_el.send_keys(username)
 
   password_el = driver.find_element(By.CSS_SELECTOR, 'input[type=password][data-js=user_pin]')
-  password_el.send_keys(PW)
+  password_el.send_keys(password)
 
   login_el = driver.find_element(By.CSS_SELECTOR, 'input[type=submit][data-js=button_login]')
   login_el.click()
 
-  # Here we're relying on the fact our original URL included a redirect to the
-  # "Checked Out" page of the user dashboard.
+  # Wait for the form submit to result in a navigation away
+  WebDriverWait(driver, 10.0).until(
+      EC.staleness_of(login_el)
+  )
 
-  title_el = WebDriverWait(driver, 10.0).until(
+
+@dataclasses.dataclass
+class CheckedOutItem:
+  title: str
+  author: str  # may be ""
+  barcode: str
+
+  due_date: datetime
+
+
+def checked_out_items(driver: RemoteWebDriver) -> Iterable[CheckedOutItem]:
+  driver.get('https://kcls.bibliocommons.com/v2/checkedout')
+
+  # Wait for AJAX to settle
+  WebDriverWait(driver, 10.0).until(
     EC.presence_of_element_located((By.CSS_SELECTOR, 'span.cp-borrowing-utility-bar-title'))
   )
 
@@ -50,6 +64,16 @@ with webdriver.Chrome(options) as driver:
 
     barcode = t('div.cp-barcode-field span.field-value')
 
-    print(f'{due_date:%Y-%m-%d}    '
-          f'{title:>40}'
-          f'{author:>20}')
+    yield CheckedOutItem(title, author, barcode, due_date)
+
+
+UN = os.environ['KCLS_USERNAME']
+PW = os.environ['KCLS_PASSWORD']
+
+
+with webdriver.Chrome(options) as driver:
+  login_as(driver, UN, PW)
+
+  for it in checked_out_items(driver):
+    print(f'{it.due_date:%Y-%m-%d} {it.barcode:<20}')
+    print(f'  {it.title:>40} {it.author:>20}')
