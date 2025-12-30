@@ -40,7 +40,9 @@ class CheckedOutItem:
 
   due_date: datetime
 
-
+# TODO: Worth exploring `/v2/print/checkedout`, which doesn't use AJAX to
+# render. That page *also* appears to include a big JSON blob at the bottom
+# with structured data about all the books?
 def checked_out_items(driver: RemoteWebDriver) -> Iterable[CheckedOutItem]:
   driver.get('https://kcls.bibliocommons.com/v2/checkedout')
 
