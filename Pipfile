@@ -5,8 +5,10 @@ name = "pypi"
 
 [packages]
 selenium = "*"
+requests = "*"
+bs4 = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.14"
+python_version = "3"
