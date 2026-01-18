@@ -10,7 +10,7 @@ def must[T](v: T | None) -> T:
     return v
 
 
-def main():
+def main(username: str, password: str):
     sessions_uri = (
         'https://gateway.bibliocommons.com/v2/libraries/(libraryName)/sessions'.replace(
             '(libraryName)', 'kcls'
@@ -20,8 +20,8 @@ def main():
     r = requests.post(
         sessions_uri,
         json={
-            'username': os.environ['KCLS_USERNAME'],
-            'password': os.environ['KCLS_PASSWORD'],
+            'username': username,
+            'password': password,
         },
     )
     r.raise_for_status()
@@ -61,4 +61,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main(os.environ['KCLS_USERNAME'], os.environ['KCLS_PASSWORD'])
