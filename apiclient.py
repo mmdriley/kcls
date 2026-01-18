@@ -31,7 +31,12 @@ class KCLSClient:
                 'password': password,
             },
         )
-        r.raise_for_status()
+        try:
+            r.raise_for_status()
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code == 401:
+                raise ValueError('Invalid credentials') from e
+            raise
 
         self.session_id = r.json()['auth']['sessionId']
         self.auth_token = r.json()['auth']['authToken']
