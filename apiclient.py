@@ -19,9 +19,7 @@ class CheckedOutItem:
     due_date: date
 
 
-SESSIONS_URI = (
-    'https://gateway.bibliocommons.com/v2/libraries/kcls/sessions'
-)
+SESSIONS_URI = 'https://gateway.bibliocommons.com/v2/libraries/kcls/sessions'
 
 
 class KCLSClient:
@@ -68,6 +66,7 @@ class KCLSClient:
             items.append(CheckedOutItem(title, author, barcode, due_date))
 
         return items
+
 
 def default_client() -> KCLSClient:
     return KCLSClient(os.environ['KCLS_USERNAME'], os.environ['KCLS_PASSWORD'])
