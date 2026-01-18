@@ -5,9 +5,9 @@ name = "pypi"
 
 [packages]
 beautifulsoup4 = "*"
-requests = "*"
 flask = "*"
 gunicorn = "*"
+requests = "*"
 
 [dev-packages]
 
