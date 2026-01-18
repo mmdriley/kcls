@@ -10,4 +10,5 @@ See `README.md`.
    - follow pep8 and the Google Python style guide
    - include type annotations, except where they can reasonably be inferred
      - cross-module interfaces should be fully annotated
- - Update documentation and comments if they are incorrect.
+ - Avoid inline CSS styles
+ - Update documentation and comments if they are incorrect
