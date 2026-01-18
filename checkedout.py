@@ -35,10 +35,13 @@ def main():
     soup = BeautifulSoup(r.text, 'html.parser')
     table = must(soup.select_one('div.cp-print-table table'))
     for row in table.select('tbody tr'):
-        title = must(row.select_one('td.item-title')).text
-        author = must(row.select_one('td.item-author')).text
-        barcode = must(row.select_one('td.item-callnumber p.barcode')).text
-        due = must(row.select_one('td.item-status div.cp-checked-out-status-overview > div:nth-child(1) > span.field-value')).text
+        def t(css: str):
+            return must(row.select_one(css)).text
+
+        title = t('td.item-title')
+        author = t('td.item-author')
+        barcode = t('td.item-callnumber p.barcode')
+        due = t('td.item-status div.cp-checked-out-status-overview > div:nth-child(1) > span.field-value')
         due_date = datetime.strptime(due, '%b %d, %Y').date()  # e.g. Dec 29, 2025
 
         print(f'{title} // {author} // {barcode} // {due_date}')
