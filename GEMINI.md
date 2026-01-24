@@ -15,6 +15,7 @@ See `README.md`.
 ### General
   - Where possible, provide endpoints that can be tested locally and check if they are acceptable before deploying to cloud hosts.
   - Update documentation and comments if they are incorrect.
+  - Avoid mixing whitespace changes and semantic changes in the same diff.
 
 ### Python
   - Ensure that Python source files:
@@ -24,6 +25,7 @@ See `README.md`.
       - cross-module interfaces should be fully annotated
   - Keep `Pipfile` and `requirements.txt` in sync. `requirements.txt` is used for containerization and should avoid strict patch version pinning to minimize noise.
   - Sort lists of dependencies.
+  - **Development Note**: When running the Flask app with `debug=True`, do NOT run it as a background subprocess of the agent. The Werkzeug reloader often fails to bind to the port or terminates unexpectedly when stdin is closed. Always ask the user to run `pipenv run python app.py` in a separate terminal for a stable development experience with hot-reloading.
 
 ### CSS
   - Avoid inline CSS styles. Punt CSS to standalone files in the `static/` directory.
