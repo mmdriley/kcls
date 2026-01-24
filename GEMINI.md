@@ -29,3 +29,4 @@ See `README.md`.
 
 ### CSS
   - Avoid inline CSS styles. Punt CSS to standalone files in the `static/` directory.
+  - Even though it may be more verbose, prefer adding semantic class names rather than using `nth-child` with a constant.
