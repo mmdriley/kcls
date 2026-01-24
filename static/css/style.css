@@ -1,0 +1,110 @@
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: #f4f4f9;
+    color: #333;
+    margin: 0;
+    padding: 20px;
+}
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+h1 {
+    text-align: center;
+    color: #2c3e50;
+}
+.account-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+.account-header {
+    background-color: #007bff;
+    color: white;
+    padding: 15px;
+    font-size: 1.2em;
+    font-weight: bold;
+}
+.error-message {
+    padding: 15px;
+    color: #d9534f;
+    background-color: #fceceb;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+th, td {
+    text-align: left;
+    padding: 12px 15px;
+    border-bottom: 1px solid #eee;
+}
+th {
+    background-color: #f8f9fa;
+    color: #6c757d;
+    font-weight: 600;
+    font-size: 0.9em;
+    text-transform: uppercase;
+}
+
+/* Column Widths & Alignment */
+th:nth-child(1), td:nth-child(1) {
+    width: auto;
+}
+
+th:nth-child(2), td:nth-child(2) {
+    width: 12rem;
+    max-width: 12rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Date Header Styling */
+.date-header {
+    background-color: #e9ecef;
+    padding: 10px 15px;
+    margin: 0;
+    font-size: 1rem;
+    border-top: 1px solid #dee2e6;
+    border-bottom: 1px solid #dee2e6;
+    color: #495057;
+}
+
+.date-header.due-soon {
+    background-color: #fceceb;
+    color: #d9534f;
+    border-color: #f5c6cb;
+}
+
+.date-group {
+    margin-bottom: 0px;
+}
+
+.date-group:last-child {
+    margin-bottom: 0;
+}
+
+.empty-state {
+    padding: 20px;
+    text-align: center;
+    color: #888;
+}
+
+/* Zebra Striping */
+tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 600px) {
+    th, td {
+        padding: 10px;
+    }
+}

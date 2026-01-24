@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KCLS Checked Out Items</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>📚 Library Books</h1>
+        
+        {% for account in accounts %}
+        <div class="account-card">
+            <div class="account-header">
+                {{ account.display_name }}
+            </div>
+            
+            {% if account.error %}
+            <div class="error-message">
+                Error loading items: {{ account.error }}
+            </div>
+            {% else %}
+                {% if account.grouped_books %}
+                    {% for group in account.grouped_books %}
+                    <div class="date-group">
+                        <h3 class="date-header {{ 'due-soon' if group.is_due_soon else '' }}">Due: {{ group.date }}</h3>
+                        <table>
+                            <tbody>
+                                {% for item in group.books %}
+                                <tr>
+                                    <td>{{ item.title }}</td>
+                                    <td>{{ item.author }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="empty-state">
+                    No items checked out.
+                </div>
+                {% endif %}
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>
