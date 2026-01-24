@@ -2,3 +2,4 @@
 .vscode/
 Pipfile.lock
 PLAN.md
+*.log
