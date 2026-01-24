@@ -50,11 +50,11 @@ th {
 }
 
 /* Column Widths & Alignment */
-th:nth-child(1), td:nth-child(1) {
+.book-title {
     width: auto;
 }
 
-th:nth-child(2), td:nth-child(2) {
+.book-author {
     width: 12rem;
     max-width: 12rem;
     white-space: nowrap;
