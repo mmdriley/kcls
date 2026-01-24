@@ -23,7 +23,7 @@ See `README.md`.
     - follow pep8 and the Google Python style guide
     - include type annotations, except where they can reasonably be inferred
       - cross-module interfaces should be fully annotated
-  - Keep `Pipfile` and `requirements.txt` in sync. `requirements.txt` is used for containerization and should avoid strict patch version pinning to minimize noise.
+  - Keep `Pipfile` updated.
   - Sort lists of dependencies.
   - **Development Note**: When running the Flask app with `debug=True`, do NOT run it as a background subprocess of the agent. The Werkzeug reloader often fails to bind to the port or terminates unexpectedly when stdin is closed. Always ask the user to run `pipenv run python app.py` in a separate terminal for a stable development experience with hot-reloading.
 
