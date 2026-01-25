@@ -19,6 +19,9 @@ import json
 from flask import Flask, render_template, abort
 from datetime import date, timedelta
 import apiclient
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
 

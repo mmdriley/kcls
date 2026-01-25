@@ -63,11 +63,9 @@ docker build -t kcls-app .
 ```
 
 ### Run
+
 ```bash
-docker run -p 8080:8080 \
-  -e APP_TOKEN="your-token" \
-  -e KCLS_CREDS='[{"username":"u", "password":"p"}]' \
-  kcls-app
+docker run --rm -it -p 8080:8080 -v "$(pwd)/.env:/app/.env" kcls-app
 ```
 
 ## Legacy CLI
