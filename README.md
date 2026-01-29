@@ -58,18 +58,21 @@ pipenv run gunicorn --bind 0.0.0.0:8080 main:app
 
 Then visit: `http://localhost:8080/view/<APP_TOKEN>` (e.g., `http://localhost:8080/view/local-dev-token`)
 
-## Docker Support
+## Deployment
 
-### Build
-```bash
-docker build -t kcls-app .
-```
+This application is deployed to **Google Cloud Functions (2nd Gen)** via GitHub Actions.
 
-### Run
+### Architecture
+-   **Platform**: Google Cloud Functions (Python 3.12, HTTP Trigger).
+-   **CI/CD**: GitHub Actions workflow (`.github/workflows/deploy.yml`) handles deployment on push to `main`.
+-   **Authentication**: Uses Workload Identity Federation (no long-lived service account keys).
+-   **Secrets**: Application secrets (`KCLS_CREDS`, `APP_TOKEN`) are loaded securely from a private Google Cloud Storage bucket at runtime.
 
-```bash
-docker run --rm -it -p 8080:8080 -v "$(pwd)/.env:/app/.env" kcls-app
-```
+### Triggering a Deploy
+Simply push changes to the `main` branch. The GitHub Action will:
+1.  Authenticate with Google Cloud.
+2.  Deploy the code as a Cloud Function (Gen 2).
+3.  The service URL remains stable (unless deleted/recreated).
 
 ## Legacy CLI
 The original CLI script is still available:
