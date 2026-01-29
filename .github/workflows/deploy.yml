@@ -35,6 +35,12 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
+      - name: Install Pipenv
+        run: pip install pipenv
+
+      - name: Generate requirements.txt
+        run: pipenv requirements > requirements.txt
+
       - name: Deploy to Cloud Functions
         run: |
           gcloud functions deploy ${{ env.FUNCTION_NAME }} \
