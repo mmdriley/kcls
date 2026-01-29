@@ -2,7 +2,8 @@
 
 A web application to aggregate and monitor checked-out library books for multiple family accounts from the King County Library System (KCLS).
 
-> NOTE: this repository was mostly authored by `gemini-cli`.
+> [!NOTE]
+> This repository was mostly authored by `gemini-cli`.
 
 ## Features
 -   **Multi-Account**: View books from multiple library cards in one place.
