@@ -66,4 +66,5 @@ jobs:
           region: ${{ env.REGION }}
           image: ghcr.io/${{ env.IMAGE_NAME }}:latest
           env_vars: KCLS_SECRETS_BUCKET=kcls-secrets-145401d9
+          service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
           flags: --allow-unauthenticated
