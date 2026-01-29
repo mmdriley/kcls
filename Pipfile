@@ -10,6 +10,7 @@ gunicorn = "*"
 requests = "*"
 python-dotenv = "*"
 google-cloud-storage = "*"
+functions-framework = "*"
 
 [dev-packages]
 

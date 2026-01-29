@@ -1,0 +1,46 @@
+name: Deploy to Cloud Functions
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+env:
+  PROJECT_ID: kcls-484205
+  REGION: us-west1
+  FUNCTION_NAME: kcls-function
+  WIF_PROVIDER: projects/97975407086/locations/global/workloadIdentityPools/kcls-pool-v2/providers/kcls-gh-provider
+  WIF_SERVICE_ACCOUNT: kcls-app-sa@kcls-484205.iam.gserviceaccount.com
+  RUNTIME_SERVICE_ACCOUNT: kcls-app-sa@kcls-484205.iam.gserviceaccount.com
+  SECRETS_BUCKET: kcls-secrets-145401d9
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Google Auth
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
+
+      - name: Deploy to Cloud Functions
+        id: deploy
+        uses: google-github-actions/deploy-cloud-functions@v2
+        with:
+          name: ${{ env.FUNCTION_NAME }}
+          region: ${{ env.REGION }}
+          runtime: python311
+          entry_point: app
+          source_dir: .
+          env_vars: KCLS_SECRETS_BUCKET=${{ env.SECRETS_BUCKET }}
+          service_account: ${{ env.RUNTIME_SERVICE_ACCOUNT }}
+          gen2: true
