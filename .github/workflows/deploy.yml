@@ -32,15 +32,18 @@ jobs:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
           service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
 
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
       - name: Deploy to Cloud Functions
-        id: deploy
-        uses: google-github-actions/deploy-cloud-functions@v2
-        with:
-          name: ${{ env.FUNCTION_NAME }}
-          region: ${{ env.REGION }}
-          runtime: python311
-          entry_point: app
-          source_dir: .
-          env_vars: KCLS_SECRETS_BUCKET=${{ env.SECRETS_BUCKET }}
-          service_account: ${{ env.RUNTIME_SERVICE_ACCOUNT }}
-          gen2: true
+        run: |
+          gcloud functions deploy ${{ env.FUNCTION_NAME }} \
+            --gen2 \
+            --region=${{ env.REGION }} \
+            --runtime=python311 \
+            --source=. \
+            --entry-point=app \
+            --trigger-http \
+            --allow-unauthenticated \
+            --service-account=${{ env.RUNTIME_SERVICE_ACCOUNT }} \
+            --set-env-vars=KCLS_SECRETS_BUCKET=${{ env.SECRETS_BUCKET }}
