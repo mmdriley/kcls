@@ -6,13 +6,13 @@ on:
   workflow_dispatch:
 
 env:
-  PROJECT_ID: kcls-484205
-  REGION: us-west1
-  FUNCTION_NAME: kcls-function
-  WIF_PROVIDER: projects/97975407086/locations/global/workloadIdentityPools/kcls-pool-v2/providers/kcls-gh-provider
-  WIF_SERVICE_ACCOUNT: kcls-app-sa@kcls-484205.iam.gserviceaccount.com
-  RUNTIME_SERVICE_ACCOUNT: kcls-app-sa@kcls-484205.iam.gserviceaccount.com
-  SECRETS_BUCKET: kcls-secrets-145401d9
+  PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+  REGION: ${{ vars.GCP_REGION }}
+  FUNCTION_NAME: ${{ vars.GCP_FUNCTION_NAME }}
+  WIF_PROVIDER: ${{ vars.GCP_WIF_PROVIDER }}
+  WIF_SERVICE_ACCOUNT: ${{ vars.GCP_SERVICE_ACCOUNT }}
+  RUNTIME_SERVICE_ACCOUNT: ${{ vars.GCP_SERVICE_ACCOUNT }}
+  SECRETS_BUCKET: ${{ vars.GCP_SECRETS_BUCKET }}
 
 jobs:
   deploy:
