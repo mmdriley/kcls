@@ -5,15 +5,6 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
 
-env:
-  PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
-  REGION: ${{ vars.GCP_REGION }}
-  FUNCTION_NAME: ${{ vars.GCP_FUNCTION_NAME }}
-  WIF_PROVIDER: ${{ vars.GCP_WIF_PROVIDER }}
-  WIF_SERVICE_ACCOUNT: ${{ vars.GCP_SERVICE_ACCOUNT }}
-  RUNTIME_SERVICE_ACCOUNT: ${{ vars.GCP_SERVICE_ACCOUNT }}
-  SECRETS_BUCKET: ${{ vars.GCP_SECRETS_BUCKET }}
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -29,8 +20,8 @@ jobs:
         id: auth
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: ${{ env.WIF_PROVIDER }}
-          service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
@@ -43,13 +34,13 @@ jobs:
 
       - name: Deploy to Cloud Functions
         run: |
-          gcloud functions deploy ${{ env.FUNCTION_NAME }} \
+          gcloud functions deploy ${{ vars.GCP_FUNCTION_NAME }} \
             --gen2 \
-            --region=${{ env.REGION }} \
+            --region=${{ vars.GCP_REGION }} \
             --runtime=python312 \
             --source=. \
             --entry-point=kcls_function \
             --trigger-http \
             --allow-unauthenticated \
-            --service-account=${{ env.RUNTIME_SERVICE_ACCOUNT }} \
-            --set-env-vars=KCLS_SECRETS_BUCKET=${{ env.SECRETS_BUCKET }}
+            --service-account=${{ vars.GCP_SERVICE_ACCOUNT }} \
+            --set-env-vars=KCLS_SECRETS_BUCKET=${{ vars.GCP_SECRETS_BUCKET }}
