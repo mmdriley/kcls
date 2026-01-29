@@ -48,12 +48,12 @@ A web application to aggregate and monitor checked-out library books for multipl
 
 **Development Mode (Auto-reload):**
 ```bash
-pipenv run python app.py
+pipenv run python main.py
 ```
 
 **Production Mode (Gunicorn - Test before deploy):**
 ```bash
-pipenv run gunicorn --bind 0.0.0.0:8080 app:app
+pipenv run gunicorn --bind 0.0.0.0:8080 main:app
 ```
 
 Then visit: `http://localhost:8080/view/<APP_TOKEN>` (e.g., `http://localhost:8080/view/local-dev-token`)
