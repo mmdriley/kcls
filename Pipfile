@@ -9,6 +9,7 @@ flask = "*"
 gunicorn = "*"
 requests = "*"
 python-dotenv = "*"
+google-cloud-storage = "*"
 
 [dev-packages]
 

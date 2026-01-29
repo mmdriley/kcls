@@ -7,6 +7,7 @@ Routes:
 
 
 Environment Variables:
+    KCLS_SECRETS_BUCKET: Optional. Name of GCS bucket containing .env file.
     APP_TOKEN:      Secret token required in the URL to access the dashboard.
     KCLS_CREDS:     JSON string containing a list of account credentials.
                     Example: '[{"username": "u1", "password": "p1", "display_name": "Name"}]'
@@ -16,31 +17,63 @@ Environment Variables:
 
 import os
 import json
+import io
 from flask import Flask, render_template, abort
 from datetime import date, timedelta
 import apiclient
-from dotenv import load_dotenv
+from dotenv import load_dotenv, dotenv_values
+from google.cloud import storage
 
 load_dotenv()
 
 app = Flask(__name__)
 
-# Configuration
-if 'APP_TOKEN' not in os.environ:
-    raise RuntimeError('APP_TOKEN environment variable is required.')
-APP_TOKEN = os.environ['APP_TOKEN']
+
+def get_config():
+    """
+    Retrieves configuration from GCS if KCLS_SECRETS_BUCKET is set,
+    otherwise falls back to os.environ.
+    """
+    bucket_name = os.environ.get('KCLS_SECRETS_BUCKET')
+    config = {}
+
+    if bucket_name:
+        try:
+            client = storage.Client()
+            bucket = client.bucket(bucket_name)
+            blob = bucket.blob('.env')
+            content = blob.download_as_text()
+            config = dotenv_values(stream=io.StringIO(content))
+        except Exception as e:
+            print(f"Error loading secrets from GCS: {e}")
+            # Fallback or re-raise? For now, we might want to fall back to env
+            # or return empty config which will fail validations below.
+            pass
+    
+    # Merge with os.environ, preferring GCS config if present (or vice-versa?)
+    # Usually GCS secrets > local env.
+    # But we need to handle cases where keys are missing in GCS.
+    
+    # Let's treat 'config' as the primary source if bucket is set.
+    # If not set, use os.environ.
+    
+    final_config = os.environ.copy()
+    if config:
+        final_config.update(config)
+        
+    return final_config
 
 
-def get_creds():
-    if 'KCLS_CREDS' in os.environ:
-        return json.loads(os.environ['KCLS_CREDS'])
+def get_creds(config):
+    if 'KCLS_CREDS' in config:
+        return json.loads(config['KCLS_CREDS'])
     # Fallback for local testing if KCLS_CREDS isn't set but individual env vars are
-    if 'KCLS_USERNAME' in os.environ and 'KCLS_PASSWORD' in os.environ:
+    if 'KCLS_USERNAME' in config and 'KCLS_PASSWORD' in config:
         return [
             {
-                'username': os.environ['KCLS_USERNAME'],
-                'password': os.environ['KCLS_PASSWORD'],
-                'display_name': os.environ.get('KCLS_DISPLAY_NAME', 'My Account'),
+                'username': config['KCLS_USERNAME'],
+                'password': config['KCLS_PASSWORD'],
+                'display_name': config.get('KCLS_DISPLAY_NAME', 'My Account'),
             }
         ]
     return []
@@ -48,10 +81,17 @@ def get_creds():
 
 @app.route('/view/<token>')
 def view_checked_out(token):
-    if token.lower() != APP_TOKEN.lower():
+    config = get_config()
+    app_token = config.get('APP_TOKEN')
+    
+    if not app_token:
+        # Configuration error
+        return "Server misconfigured: APP_TOKEN missing", 500
+
+    if token.lower() != app_token.lower():
         abort(403)
 
-    creds = get_creds()
+    creds = get_creds(config)
     all_data = []
     today = date.today()
     soon_threshold = today + timedelta(days=7)

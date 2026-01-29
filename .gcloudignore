@@ -1,0 +1,11 @@
+.git
+.gitignore
+.dockerignore
+__pycache__
+.ruff_cache
+.env
+README.md
+PLAN.md
+test_gcs_config.py
+GEMINI.md
+entrypoint
