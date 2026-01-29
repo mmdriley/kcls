@@ -42,7 +42,7 @@ jobs:
             --region=${{ env.REGION }} \
             --runtime=python312 \
             --source=. \
-            --entry-point=app \
+            --entry-point=kcls_function \
             --trigger-http \
             --allow-unauthenticated \
             --service-account=${{ env.RUNTIME_SERVICE_ACCOUNT }} \

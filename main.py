@@ -18,7 +18,8 @@ Environment Variables:
 import os
 import json
 import io
-from flask import Flask, render_template, abort
+import functions_framework
+from flask import Flask, render_template, abort, request
 from datetime import date, timedelta
 import apiclient
 from dotenv import load_dotenv, dotenv_values
@@ -149,6 +150,25 @@ def view_checked_out(token):
 @app.route('/')
 def index():
     return 'Nothing here', 404
+
+
+@functions_framework.http
+def kcls_function(request):
+    """
+    HTTP Cloud Function that wraps the Flask application.
+    """
+    # Create a request context using the environment from the request
+    # Use request.environ to preserve as much as possible, but fallback to test_request_context if needed.
+    # functions-framework requests are usually Werkzeug requests.
+    
+    internal_ctx = app.request_context(request.environ)
+    try:
+        internal_ctx.push()
+        return app.full_dispatch_request()
+    except Exception as e:
+        return app.handle_user_exception(e)
+    finally:
+        internal_ctx.pop()
 
 
 if __name__ == '__main__':
