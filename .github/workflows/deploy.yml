@@ -40,7 +40,7 @@ jobs:
           gcloud functions deploy ${{ env.FUNCTION_NAME }} \
             --gen2 \
             --region=${{ env.REGION }} \
-            --runtime=python311 \
+            --runtime=python312 \
             --source=. \
             --entry-point=app \
             --trigger-http \
