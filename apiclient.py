@@ -3,7 +3,7 @@ from datetime import date, datetime
 import os
 
 from bs4 import BeautifulSoup
-import requests
+import httpx
 
 
 def must[T](v: T | None) -> T:
@@ -24,7 +24,7 @@ SESSIONS_URI = 'https://gateway.bibliocommons.com/v2/libraries/kcls/sessions'
 
 class KCLSClient:
     def __init__(self, username: str, password: str):
-        r = requests.post(
+        r = httpx.post(
             SESSIONS_URI,
             json={
                 'username': username,
@@ -33,7 +33,7 @@ class KCLSClient:
         )
         try:
             r.raise_for_status()
-        except requests.exceptions.HTTPError as e:
+        except httpx.HTTPStatusError as e:
             if e.response.status_code == 401:
                 raise ValueError('Invalid credentials') from e
             raise
@@ -42,7 +42,7 @@ class KCLSClient:
         self.auth_token = r.json()['auth']['authToken']
 
     def get_checked_out_items(self) -> list[CheckedOutItem]:
-        r = requests.get(
+        r = httpx.get(
             'https://kcls.bibliocommons.com/v2/print/checkedout/out',
             cookies={
                 'session_id': self.session_id,
