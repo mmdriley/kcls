@@ -1,9 +1,8 @@
 import dataclasses
 from datetime import date, datetime
-import os
 
-from bs4 import BeautifulSoup
 import httpx
+from bs4 import BeautifulSoup
 
 
 def must[T](v: T | None) -> T:
@@ -24,8 +23,8 @@ SESSIONS_URI = 'https://gateway.bibliocommons.com/v2/libraries/kcls/sessions'
 
 class KCLSClient:
     def __init__(self, client: httpx.AsyncClient | None = None):
-        self.session_id = None
-        self.auth_token = None
+        self.session_id: str | None = None
+        self.auth_token: str | None = None
         if client:
             self.client = client
         else:
@@ -50,6 +49,10 @@ class KCLSClient:
         self.auth_token = r.json()['auth']['authToken']
 
     async def get_checked_out_items(self) -> list[CheckedOutItem]:
+        if not self.session_id or not self.auth_token:
+             # Or raise specific error
+             raise RuntimeError("Client not logged in")
+
         r = await self.client.get(
             'https://kcls.bibliocommons.com/v2/print/checkedout/out',
             cookies={

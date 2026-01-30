@@ -1,6 +1,7 @@
+import asyncio
 import json
 import os
-import asyncio
+
 import httpx
 
 import apiclient
@@ -41,7 +42,9 @@ async def async_main():
             print(error)
         else:
             for item in items:
-                print(f'{item.title} // {item.author} // {item.barcode} // {item.due_date}')
+                print(
+                    f'{item.title} // {item.author} // {item.barcode} // {item.due_date}'
+                )
         print()
 
 

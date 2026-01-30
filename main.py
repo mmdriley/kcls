@@ -15,17 +15,19 @@ Environment Variables:
     KCLS_PASSWORD:  (Fallback) Single account password if KCLS_CREDS is not set.
 """
 
-import os
-import json
-import io
 import asyncio
-import functions_framework
-from flask import Flask, render_template, abort, request
+import io
+import json
+import os
 from datetime import date, timedelta
-import apiclient
-from dotenv import load_dotenv, dotenv_values
-from google.cloud import storage
+
+import functions_framework
 import httpx
+from dotenv import dotenv_values, load_dotenv
+from flask import Flask, abort, render_template
+from google.cloud import storage
+
+import apiclient
 
 load_dotenv()
 
@@ -48,24 +50,25 @@ def get_config():
             content = blob.download_as_text()
             config = dotenv_values(stream=io.StringIO(content))
         except Exception as e:
-            print(f"Error loading secrets from GCS: {e}")
+            print(f'Error loading secrets from GCS: {e}')
             # Fallback or re-raise? For now, we might want to fall back to env
             # or return empty config which will fail validations below.
             pass
-    
+
     # Merge with os.environ, preferring GCS config if present (or vice-versa?)
     # Usually GCS secrets > local env.
     # But we need to handle cases where keys are missing in GCS.
-    
+
     # Let's treat 'config' as the primary source if bucket is set.
     # If not set, use os.environ.
-    
-    final_config = os.environ.copy()
-    if config:
-        final_config.update(config)
-        
-    return final_config
 
+        final_config = os.environ.copy()
+        if config:
+            # Filter out None values and ensure everything is a string
+            clean_config = {k: v for k, v in config.items() if v is not None}
+            final_config.update(clean_config)
+            
+        return final_config
 
 def get_creds(config):
     if 'KCLS_CREDS' in config:
@@ -131,10 +134,10 @@ async def process_cred(cred, shared_client, soon_threshold):
 async def view_checked_out(token):
     config = get_config()
     app_token = config.get('APP_TOKEN')
-    
+
     if not app_token:
         # Configuration error
-        return "Server misconfigured: APP_TOKEN missing", 500
+        return 'Server misconfigured: APP_TOKEN missing', 500
 
     if token.lower() != app_token.lower():
         abort(403)
@@ -163,7 +166,7 @@ def kcls_function(request):
     # Create a request context using the environment from the request
     # Use request.environ to preserve as much as possible, but fallback to test_request_context if needed.
     # functions-framework requests are usually Werkzeug requests.
-    
+
     internal_ctx = app.request_context(request.environ)
     try:
         internal_ctx.push()
