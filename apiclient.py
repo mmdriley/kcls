@@ -24,11 +24,17 @@ SESSIONS_URI = 'https://gateway.bibliocommons.com/v2/libraries/kcls/sessions'
 
 class KCLSClient:
     def __init__(self, username: str, password: str):
+        self.username = username
+        self.password = password
+        self.session_id = None
+        self.auth_token = None
+
+    def login(self):
         r = httpx.post(
             SESSIONS_URI,
             json={
-                'username': username,
-                'password': password,
+                'username': self.username,
+                'password': self.password,
             },
         )
         try:
@@ -74,4 +80,6 @@ class KCLSClient:
 
 
 def default_client() -> KCLSClient:
-    return KCLSClient(os.environ['KCLS_USERNAME'], os.environ['KCLS_PASSWORD'])
+    client = KCLSClient(os.environ['KCLS_USERNAME'], os.environ['KCLS_PASSWORD'])
+    client.login()
+    return client

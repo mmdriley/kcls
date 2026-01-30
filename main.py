@@ -100,6 +100,7 @@ def view_checked_out(token):
     for cred in creds:
         try:
             client = apiclient.KCLSClient(cred['username'], cred['password'])
+            client.login()
             items = client.get_checked_out_items()
 
             # Group by due date

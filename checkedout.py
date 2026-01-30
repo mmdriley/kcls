@@ -17,6 +17,7 @@ def main():
 
     for cred in creds:
         client = apiclient.KCLSClient(cred['username'], cred['password'])
+        client.login()
         print(f'# {cred.get("display_name", cred["username"])}')
         for item in client.get_checked_out_items():
             print(f'{item.title} // {item.author} // {item.barcode} // {item.due_date}')
