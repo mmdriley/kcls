@@ -7,18 +7,10 @@ import httpx
 import apiclient
 
 
-async def process_cred(cred, shared_client):
-    try:
-        client = apiclient.KCLSClient(client=shared_client)
-        await client.login(cred['username'], cred['password'])
-        items = await client.get_checked_out_items()
-        return cred, items, None
-    except ValueError as e:
-        if str(e) == 'Invalid credentials':
-            return cred, [], 'Bogus Credentials'
-        return cred, [], str(e)
-    except Exception as e:
-        return cred, [], str(e)
+async def get_user_items(client, username, password):
+    kclsclient = apiclient.KCLSClient(client)
+    await kclsclient.login(username, password)
+    return await kclsclient.get_checked_out_items()
 
 
 async def async_main():
@@ -32,25 +24,27 @@ async def async_main():
             }
         ]
 
-    async with httpx.AsyncClient() as shared_client:
-        tasks = [process_cred(cred, shared_client) for cred in creds]
-        results = await asyncio.gather(*tasks)
+    async with httpx.AsyncClient() as httpx_client:
+        async def one_user_items(username, password):
+            c = apiclient.KCLSClient(httpx_client)
+            await c.login(username, password)
+            return await c.get_checked_out_items()
 
-    for cred, items, error in results:
+        tasks = [one_user_items(cred['username'], cred['password']) for cred in creds]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    for cred, r in zip(creds, results):
         print(f'# {cred.get("display_name", cred["username"])}')
-        if error:
-            print(error)
+
+        if isinstance(r, Exception):
+            print(str(r))
         else:
-            for item in items:
+            for item in r:
                 print(
                     f'{item.title} // {item.author} // {item.barcode} // {item.due_date}'
                 )
         print()
 
 
-def main():
-    asyncio.run(async_main())
-
-
 if __name__ == '__main__':
-    main()
+    asyncio.run(async_main())

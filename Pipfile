@@ -5,12 +5,12 @@ name = "pypi"
 
 [packages]
 beautifulsoup4 = "*"
-flask = "*"
 gunicorn = "*"
 python-dotenv = "*"
 google-cloud-storage = "*"
 functions-framework = "*"
 httpx = "*"
+flask = {extras = ["async"], version = "*"}
 
 [dev-packages]
 ruff = "*"

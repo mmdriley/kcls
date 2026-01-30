@@ -25,10 +25,7 @@ class KCLSClient:
     def __init__(self, client: httpx.AsyncClient | None = None):
         self.session_id: str | None = None
         self.auth_token: str | None = None
-        if client:
-            self.client = client
-        else:
-            self.client = httpx.AsyncClient()
+        self.client = client or httpx.AsyncClient()
 
     async def login(self, username: str, password: str):
         r = await self.client.post(
@@ -38,20 +35,15 @@ class KCLSClient:
                 'password': password,
             },
         )
-        try:
-            r.raise_for_status()
-        except httpx.HTTPStatusError as e:
-            if e.response.status_code == 401:
-                raise ValueError('Invalid credentials') from e
-            raise
+        if r.status_code == 401:
+            raise ValueError('Invalid credentials')  # prettier error for common case
+        r.raise_for_status()
 
         self.session_id = r.json()['auth']['sessionId']
         self.auth_token = r.json()['auth']['authToken']
 
     async def get_checked_out_items(self) -> list[CheckedOutItem]:
-        if not self.session_id or not self.auth_token:
-             # Or raise specific error
-             raise RuntimeError("Client not logged in")
+        assert self.session_id and self.auth_token
 
         r = await self.client.get(
             'https://kcls.bibliocommons.com/v2/print/checkedout/out',
