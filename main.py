@@ -18,12 +18,14 @@ Environment Variables:
 import os
 import json
 import io
+import asyncio
 import functions_framework
 from flask import Flask, render_template, abort, request
 from datetime import date, timedelta
 import apiclient
 from dotenv import load_dotenv, dotenv_values
 from google.cloud import storage
+import httpx
 
 load_dotenv()
 
@@ -80,8 +82,53 @@ def get_creds(config):
     return []
 
 
+async def process_cred(cred, shared_client, soon_threshold):
+    try:
+        client = apiclient.KCLSClient(cred['username'], cred['password'], client=shared_client)
+        await client.async_login()
+        items = await client.async_get_checked_out_items()
+
+        # Group by due date
+        items.sort(key=lambda x: x.due_date)
+        grouped_books = []
+        if items:
+            current_date = items[0].due_date
+            current_group = []
+            for item in items:
+                if item.due_date != current_date:
+                    grouped_books.append(
+                        {
+                            'date': current_date,
+                            'books': current_group,
+                            'is_due_soon': current_date <= soon_threshold,
+                        }
+                    )
+                    current_date = item.due_date
+                    current_group = []
+                current_group.append(item)
+            grouped_books.append(
+                {
+                    'date': current_date,
+                    'books': current_group,
+                    'is_due_soon': current_date <= soon_threshold,
+                }
+            )
+
+        return {
+            'display_name': cred.get('display_name', cred['username']),
+            'grouped_books': grouped_books,
+            'error': None,
+        }
+    except Exception as e:
+        return {
+            'display_name': cred.get('display_name', cred['username']),
+            'grouped_books': [],
+            'error': str(e),
+        }
+
+
 @app.route('/view/<token>')
-def view_checked_out(token):
+async def view_checked_out(token):
     config = get_config()
     app_token = config.get('APP_TOKEN')
     
@@ -93,57 +140,12 @@ def view_checked_out(token):
         abort(403)
 
     creds = get_creds(config)
-    all_data = []
     today = date.today()
     soon_threshold = today + timedelta(days=7)
 
-    for cred in creds:
-        try:
-            client = apiclient.KCLSClient(cred['username'], cred['password'])
-            client.login()
-            items = client.get_checked_out_items()
-
-            # Group by due date
-            items.sort(key=lambda x: x.due_date)
-            grouped_books = []
-            if items:
-                current_date = items[0].due_date
-                current_group = []
-                for item in items:
-                    if item.due_date != current_date:
-                        grouped_books.append(
-                            {
-                                'date': current_date,
-                                'books': current_group,
-                                'is_due_soon': current_date <= soon_threshold,
-                            }
-                        )
-                        current_date = item.due_date
-                        current_group = []
-                    current_group.append(item)
-                grouped_books.append(
-                    {
-                        'date': current_date,
-                        'books': current_group,
-                        'is_due_soon': current_date <= soon_threshold,
-                    }
-                )
-
-            all_data.append(
-                {
-                    'display_name': cred.get('display_name', cred['username']),
-                    'grouped_books': grouped_books,
-                    'error': None,
-                }
-            )
-        except Exception as e:
-            all_data.append(
-                {
-                    'display_name': cred.get('display_name', cred['username']),
-                    'grouped_books': [],
-                    'error': str(e),
-                }
-            )
+    async with httpx.AsyncClient() as shared_client:
+        tasks = [process_cred(cred, shared_client, soon_threshold) for cred in creds]
+        all_data = await asyncio.gather(*tasks)
 
     return render_template('index.html', accounts=all_data)
 
