@@ -84,8 +84,8 @@ def get_creds(config):
 
 async def process_cred(cred, shared_client, soon_threshold):
     try:
-        client = apiclient.KCLSClient(cred['username'], cred['password'], client=shared_client)
-        await client.async_login()
+        client = apiclient.KCLSClient(client=shared_client)
+        await client.async_login(cred['username'], cred['password'])
         items = await client.async_get_checked_out_items()
 
         # Group by due date

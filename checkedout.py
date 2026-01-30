@@ -8,8 +8,8 @@ import apiclient
 
 async def process_cred(cred, shared_client):
     try:
-        client = apiclient.KCLSClient(cred['username'], cred['password'], client=shared_client)
-        await client.async_login()
+        client = apiclient.KCLSClient(client=shared_client)
+        await client.async_login(cred['username'], cred['password'])
         items = await client.async_get_checked_out_items()
         return cred, items, None
     except ValueError as e:

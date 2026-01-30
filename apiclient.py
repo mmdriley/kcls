@@ -24,9 +24,7 @@ SESSIONS_URI = 'https://gateway.bibliocommons.com/v2/libraries/kcls/sessions'
 
 
 class KCLSClient:
-    def __init__(self, username: str, password: str, client: httpx.AsyncClient | None = None):
-        self.username = username
-        self.password = password
+    def __init__(self, client: httpx.AsyncClient | None = None):
         self.session_id = None
         self.auth_token = None
         self.client = client
@@ -36,23 +34,23 @@ class KCLSClient:
             return self.client
         return httpx.AsyncClient()
 
-    async def async_login(self):
+    async def async_login(self, username: str, password: str):
         # If we own the client (it was created ad-hoc), we should close it?
         # Actually, for the ad-hoc case in the sync wrapper, we probably want a context manager.
         # Let's simplify: always use a context manager for the ad-hoc case.
         
         if self.client:
-             await self._perform_login(self.client)
+             await self._perform_login(self.client, username, password)
         else:
             async with httpx.AsyncClient() as client:
-                await self._perform_login(client)
+                await self._perform_login(client, username, password)
 
-    async def _perform_login(self, client: httpx.AsyncClient):
+    async def _perform_login(self, client: httpx.AsyncClient, username: str, password: str):
         r = await client.post(
             SESSIONS_URI,
             json={
-                'username': self.username,
-                'password': self.password,
+                'username': username,
+                'password': password,
             },
         )
         try:
@@ -65,8 +63,8 @@ class KCLSClient:
         self.session_id = r.json()['auth']['sessionId']
         self.auth_token = r.json()['auth']['authToken']
 
-    def login(self):
-        asyncio.run(self.async_login())
+    def login(self, username: str, password: str):
+        asyncio.run(self.async_login(username, password))
 
     async def async_get_checked_out_items(self) -> list[CheckedOutItem]:
         if self.client:
@@ -111,6 +109,6 @@ class KCLSClient:
 
 
 def default_client() -> KCLSClient:
-    client = KCLSClient(os.environ['KCLS_USERNAME'], os.environ['KCLS_PASSWORD'])
-    client.login()
+    client = KCLSClient()
+    client.login(os.environ['KCLS_USERNAME'], os.environ['KCLS_PASSWORD'])
     return client
