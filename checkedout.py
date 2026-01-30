@@ -7,10 +7,17 @@ import apiclient
 
 
 async def process_cred(cred, shared_client):
-    client = apiclient.KCLSClient(cred['username'], cred['password'], client=shared_client)
-    await client.async_login()
-    items = await client.async_get_checked_out_items()
-    return cred, items
+    try:
+        client = apiclient.KCLSClient(cred['username'], cred['password'], client=shared_client)
+        await client.async_login()
+        items = await client.async_get_checked_out_items()
+        return cred, items, None
+    except ValueError as e:
+        if str(e) == 'Invalid credentials':
+            return cred, [], 'Bogus Credentials'
+        return cred, [], str(e)
+    except Exception as e:
+        return cred, [], str(e)
 
 
 async def async_main():
@@ -28,10 +35,13 @@ async def async_main():
         tasks = [process_cred(cred, shared_client) for cred in creds]
         results = await asyncio.gather(*tasks)
 
-    for cred, items in results:
+    for cred, items, error in results:
         print(f'# {cred.get("display_name", cred["username"])}')
-        for item in items:
-            print(f'{item.title} // {item.author} // {item.barcode} // {item.due_date}')
+        if error:
+            print(error)
+        else:
+            for item in items:
+                print(f'{item.title} // {item.author} // {item.barcode} // {item.due_date}')
         print()
 
 
