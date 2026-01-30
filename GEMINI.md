@@ -19,7 +19,9 @@ See `README.md`.
 
 ### Python
   - Ensure that Python source files:
-    - are formatted with `ruff`
+    - are formatted with `ruff format`
+    - are linted via `pipenv run ruff check --fix`
+    - typecheck with `pipenv run ty check`
     - follow pep8 and the Google Python style guide
     - include type annotations, except where they can reasonably be inferred
       - cross-module interfaces should be fully annotated
