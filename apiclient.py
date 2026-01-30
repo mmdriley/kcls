@@ -1,6 +1,7 @@
 import dataclasses
 from datetime import date, datetime
 import os
+import asyncio
 
 from bs4 import BeautifulSoup
 import httpx
@@ -23,14 +24,31 @@ SESSIONS_URI = 'https://gateway.bibliocommons.com/v2/libraries/kcls/sessions'
 
 
 class KCLSClient:
-    def __init__(self, username: str, password: str):
+    def __init__(self, username: str, password: str, client: httpx.AsyncClient | None = None):
         self.username = username
         self.password = password
         self.session_id = None
         self.auth_token = None
+        self.client = client
 
-    def login(self):
-        r = httpx.post(
+    async def _get_client(self) -> httpx.AsyncClient:
+        if self.client:
+            return self.client
+        return httpx.AsyncClient()
+
+    async def async_login(self):
+        # If we own the client (it was created ad-hoc), we should close it?
+        # Actually, for the ad-hoc case in the sync wrapper, we probably want a context manager.
+        # Let's simplify: always use a context manager for the ad-hoc case.
+        
+        if self.client:
+             await self._perform_login(self.client)
+        else:
+            async with httpx.AsyncClient() as client:
+                await self._perform_login(client)
+
+    async def _perform_login(self, client: httpx.AsyncClient):
+        r = await client.post(
             SESSIONS_URI,
             json={
                 'username': self.username,
@@ -47,8 +65,18 @@ class KCLSClient:
         self.session_id = r.json()['auth']['sessionId']
         self.auth_token = r.json()['auth']['authToken']
 
-    def get_checked_out_items(self) -> list[CheckedOutItem]:
-        r = httpx.get(
+    def login(self):
+        asyncio.run(self.async_login())
+
+    async def async_get_checked_out_items(self) -> list[CheckedOutItem]:
+        if self.client:
+            return await self._perform_get_checked_out_items(self.client)
+        else:
+            async with httpx.AsyncClient() as client:
+                return await self._perform_get_checked_out_items(client)
+
+    async def _perform_get_checked_out_items(self, client: httpx.AsyncClient) -> list[CheckedOutItem]:
+        r = await client.get(
             'https://kcls.bibliocommons.com/v2/print/checkedout/out',
             cookies={
                 'session_id': self.session_id,
@@ -77,6 +105,9 @@ class KCLSClient:
             items.append(CheckedOutItem(title, author, barcode, due_date))
 
         return items
+
+    def get_checked_out_items(self) -> list[CheckedOutItem]:
+        return asyncio.run(self.async_get_checked_out_items())
 
 
 def default_client() -> KCLSClient:
