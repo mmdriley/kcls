@@ -63,7 +63,12 @@ class KCLSClient:
             def t(css: str):
                 return must(row.select_one(css)).text
 
-            title = t('td.item-title')
+            title = t('td.item-title .main-title')
+            sub_title = t('td.item-title .sub-title')
+
+            if sub_title:
+                title = f'{title}: {sub_title}'
+
             author = t('td.item-author')
             barcode = t('td.item-callnumber p.barcode')
             due = t(
