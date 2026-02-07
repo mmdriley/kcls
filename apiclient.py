@@ -78,4 +78,9 @@ class KCLSClient:
 
             items.append(CheckedOutItem(title, author, barcode, due_date))
 
+        # TODO: someday I will probably need to add pagination support.
+        # For the /v2/print/checkedout endpoint, it works with `?page=2` etc.
+        # This div below will say e.g. "Page 1 of 0" [sic], "Page 1 of 1", "Page 1 of 2", etc.
+        page_info = must(soup.select_one('div.cp-checked-out-print-list div.page-info')).text
+
         return items
