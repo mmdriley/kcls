@@ -46,7 +46,7 @@ class KCLSClient:
         assert self.session_id and self.auth_token
 
         r = await self.client.get(
-            'https://kcls.bibliocommons.com/v2/print/checkedout/out',
+            'https://kcls.bibliocommons.com/v2/print/checkedout',
             cookies={
                 'session_id': self.session_id,
                 'bc_access_token': self.auth_token,
@@ -72,8 +72,8 @@ class KCLSClient:
             author = t('td.item-author')
             barcode = t('td.item-callnumber p.barcode')
             due = t(
-                'td.item-status div.cp-checked-out-status-overview > div:nth-child(1) > span.field-value'
-            )
+                'td.item-status div.cp-checked-out-status-overview > div:nth-of-type(1) > span.field-value'
+            )  # e.g. Feb 07, 2026
             due_date = datetime.strptime(due, '%b %d, %Y').date()
 
             items.append(CheckedOutItem(title, author, barcode, due_date))
