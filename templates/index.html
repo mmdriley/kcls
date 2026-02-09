@@ -24,7 +24,7 @@
                 {% if account.grouped_books %}
                     {% for group in account.grouped_books %}
                     <div class="date-group">
-                        <h3 class="date-header {{ 'due-soon' if group.is_due_soon else '' }}">Due: {{ group.date }}</h3>
+                        <h3 class="date-header {{ 'due-soon' if group.is_due_soon else '' }}">Due: {{ group.date }}{% if group.books | length > 3 %} ({{ group.books | length }}){% endif %}</h3>
                         <table>
                             <tbody>
                                 {% for item in group.books %}
